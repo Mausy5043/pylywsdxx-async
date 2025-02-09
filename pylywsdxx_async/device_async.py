@@ -5,8 +5,10 @@
 # AGPL-3.0-or-later  - see LICENSE
 
 import asyncio
+import collections
 import logging
 import struct
+import sys
 
 from bleak import BleakClient
 from bleak.backends.characteristic import BleakGATTCharacteristic
@@ -44,6 +46,17 @@ class Lywsd03mmcData:
             + f"battery_vol:        {self.bat_volt}, "
             + f"battery_percentage: {self.bat_perc}"
         )
+
+
+class SensorData(
+    collections.namedtuple("SensorDataBase", ["temperature", "humidity", "battery", "voltage"])
+):
+    """Class to store sensor data.
+    For LYWSD02 devices temperature and humidity readings are available.
+    For LYWSD03MMC devices also battery information is available.
+    """
+
+    __slots__ = ()
 
 
 class Lywsd03mmcOneHourHistoryData:
@@ -98,8 +111,27 @@ class Lywsd02:
     UUID_BATTERY = f"EBE0CCC4-{COMMON_UUID}"  # _   1 byte                READ
 
     def __init__(self, mac: str, notification_timeout: float, debug: bool = False):
-        self.mac_or_uuid = mac
-        self.client = BleakClient(address_or_ble_device=self.mac_or_uuid, timeout=notification_timeout)
+        """
+        Initialise a LYWSD02 device
+
+        Args:
+            mac: MAC-adress of the device.
+            notification_timeout: number of seconds to wait for a connection to be made.
+            debug: whether to provide debugging info output.
+        """
+        self._mac: str = mac
+        self.debug: bool = debug
+        if debug:
+            if len(LOGGER.handlers) == 0:
+                LOGGER.addHandler(logging.StreamHandler(sys.stdout))
+            LOGGER.level = logging.DEBUG
+        self._notification_timeout: float = notification_timeout
+        self._tz_offset = None
+        self._data = SensorData(None, None, None, None)
+        self._history_data = collections.OrderedDict()  # type: ignore
+        self.client = BleakClient(
+            address_or_ble_device=self._mac, timeout=self._notification_timeout
+        )
 
     async def connect(self) -> bool:
         return await self.client.connect()
@@ -206,7 +238,7 @@ class Lywsd02:
 
 class Lywsd03(Lywsd02):
     """Class to communicate with LYWSD03MMC devices."""
-    
+
     # Call the parent init with a bigger notification timeout
     def __init__(self, mac: str, notification_timeout: float = 12.3, debug=False) -> None:
         super().__init__(mac=mac, notification_timeout=notification_timeout, debug=debug)

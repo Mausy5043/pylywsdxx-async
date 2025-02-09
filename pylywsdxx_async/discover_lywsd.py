@@ -9,12 +9,15 @@ from bleak.backends.device import BLEDevice
 from bleak.exc import BleakDBusError
 
 
+async def discover_ble_devices() -> list[BLEDevice]:
+    return await BleakScanner.discover(timeout=60)
+
 async def discover() -> None:
     """Discover LYWSDxx devices and display them on the console."""
     retry_attempts: int = 3
     for attempt in range(retry_attempts):
         try:
-            device_list: list[BLEDevice] = await BleakScanner().discover(timeout=60)
+            device_list: list[BLEDevice] = await discover_ble_devices()
             for device in device_list:
                 if "LYWS" in str(device):
                     print(f"Address: {device.address} - Name: {device.name}.")

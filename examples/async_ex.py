@@ -8,7 +8,8 @@ import sys
 # fmt:off
 # add the path to the package in order to import it
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from pylywsdxx_async.lywsd03mmc_client import Lywsd03mmcClient
+from pylywsdxx_async.lywsd03mmc_client import Lywsd03mmcClient  # noqa: E402
+
 # fmt: on
 
 

@@ -14,16 +14,18 @@ from collections.abc import Generator
 
 # import warnings
 from datetime import datetime, timedelta
-from typing import Literal, Union
+from typing import Literal
 
 from bluepy3 import btle
 
-UUID_UNITS = "EBE0CCBE-7A0A-4B0C-8A1A-6FF2997DA3A6"      # _       0x00 - F, 0x01 - C    READ WRITE
-UUID_HISTORY   = "EBE0CCBC-7A0A-4B0C-8A1A-6FF2997DA3A6"  # _     Last idx 152          READ NOTIFY
+UUID_UNITS = "EBE0CCBE-7A0A-4B0C-8A1A-6FF2997DA3A6"  # _       0x00 - F, 0x01 - C    READ WRITE
+UUID_HISTORY = "EBE0CCBC-7A0A-4B0C-8A1A-6FF2997DA3A6"  # _     Last idx 152          READ NOTIFY
 UUID_HISTORY_3 = "EBE0CCBC-7A0A-4B0C-8A1A-6FF2997DA3A6"  # _   Last idx 152          READ NOTIFY
-UUID_TIME = "EBE0CCB7-7A0A-4B0C-8A1A-6FF2997DA3A6"       # _        5 or 4 bytes          READ WRITE
-UUID_DATA = "EBE0CCC1-7A0A-4B0C-8A1A-6FF2997DA3A6"       # _        3 bytes               READ NOTIFY
-UUID_BATTERY = "EBE0CCC4-7A0A-4B0C-8A1A-6FF2997DA3A6"    # _     1 byte                READ
+# _        5 or 4 bytes          READ WRITE
+UUID_TIME = "EBE0CCB7-7A0A-4B0C-8A1A-6FF2997DA3A6"
+# _        3 bytes               READ NOTIFY
+UUID_DATA = "EBE0CCC1-7A0A-4B0C-8A1A-6FF2997DA3A6"
+UUID_BATTERY = "EBE0CCC4-7A0A-4B0C-8A1A-6FF2997DA3A6"  # _     1 byte                READ
 UUID_NUM_RECORDS = "EBE0CCB9-7A0A-4B0C-8A1A-6FF2997DA3A6"  # _ 8 bytes               READ
 UUID_RECORD_IDX = "EBE0CCBA-7A0A-4B0C-8A1A-6FF2997DA3A6"  # _  4 bytes               READ WRITE
 
@@ -277,11 +279,11 @@ class Lywsd02:  # pylint: disable=R0902
         return float(self.data.temperature)
 
     @property
-    def history_index(self) -> Union[tuple, Literal[0]]:
+    def history_index(self) -> tuple | Literal[0]:
         with self.connect():
             ch = self._peripheral.getCharacteristics(uuid=UUID_RECORD_IDX)[0]
             value = ch.read()
-        _idx: Union[tuple, Literal[0]] = 0 if len(value) == 0 else struct.unpack_from("I", value)
+        _idx: tuple | Literal[0] = 0 if len(value) == 0 else struct.unpack_from("I", value)
         return _idx
 
     @history_index.setter

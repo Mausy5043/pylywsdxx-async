@@ -1,0 +1,24 @@
+# When making changes to this file update requirements.txt also !!
+# Usage:
+# conda -v env update --file environment.yml; pre-commit run --all-files; pycheck
+
+name: pylywsdxx-async
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.12
+  - pip
+  # imported deps
+
+  # Not on conda channels:
+  - pip:
+    - bleak
+
+  # dev deps
+  - pylint
+  - pipdeptree
+  - pre-commit
+  - typing-extensions

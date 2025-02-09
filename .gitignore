@@ -1,0 +1,48 @@
+# Created by https://www.gitignore.io/api/python,pycharm
+# Edit at https://www.gitignore.io/?templates=python,pycharm
+
+### local linting
+FIXME
+FIXME-2
+FIXME-SECURITY
+
+# local files
+.local/
+
+### PyCharm ###
+.idea/
+
+### Visual Studio ###
+.vscode/
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+
+# pyenv
+.python-version
+
+# mypy
+.mypy_cache/
+
+# ruff
+.ruff_cache/
+
+
+# End of https://www.gitignore.io/api/python,pycharm
+.DS_Store
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/

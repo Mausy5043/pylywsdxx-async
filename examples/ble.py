@@ -24,4 +24,5 @@ async def main() -> None:
         except BaseException:
             pass
 
+
 asyncio.run(main())

@@ -27,9 +27,11 @@ async def discover() -> None:
             else:
                 raise e
 
+
 def main():
     print("Scanning for LYWSDxx devices...(max 60s)")
     asyncio.run(discover())
+
 
 if __name__ == "__main__":
     main()

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import asyncio
+import platform
 
 from bleak import BleakClient
-import platform
 
 # room 1.1
 if platform.system() == "Darwin":

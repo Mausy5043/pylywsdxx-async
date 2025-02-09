@@ -31,5 +31,6 @@ async def main(address) -> None:
                     x = await client.read_gatt_descriptor(d.handle)
                     print(f"\t\t handle: {d.handle} {x}")
 
+
 if MAC_ADDRESS_OR_UUID:
     asyncio.run(main(MAC_ADDRESS_OR_UUID))

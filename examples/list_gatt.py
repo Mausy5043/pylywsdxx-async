@@ -9,7 +9,9 @@ import platform
 
 from bleak import BleakClient
 
-# room 1.1
+MAC_ADDRESS_OR_UUID = None
+if platform.system() == "Windows":
+    MAC_ADDRESS_OR_UUID = "A4:C1:38:6F:E7:CA"
 if platform.system() == "Darwin":
     MAC_ADDRESS_OR_UUID = "A05DCB20-0769-C0EB-BD4D-13A26C847B4A"
 if platform.system() == "Linux":
@@ -29,5 +31,5 @@ async def main(address) -> None:
                     x = await client.read_gatt_descriptor(d.handle)
                     print(f"\t\t handle: {d.handle} {x}")
 
-
-asyncio.run(main(MAC_ADDRESS_OR_UUID))
+if MAC_ADDRESS_OR_UUID:
+    asyncio.run(main(MAC_ADDRESS_OR_UUID))

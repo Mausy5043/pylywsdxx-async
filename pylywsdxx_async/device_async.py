@@ -82,7 +82,7 @@ class Lywsd03mmcOneHourHistoryData:
         )
 
 
-class Lywsd03mmcClient:
+class Lywsd03:
     BYTES_TO_TEMP_UNIT = {"1": "F", "0": "C"}
 
     COMMON_UUID = "7A0A-4B0C-8A1A-6FF2997DA3A6"

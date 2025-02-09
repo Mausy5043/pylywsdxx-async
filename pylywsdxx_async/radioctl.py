@@ -10,9 +10,6 @@ import subprocess  # nosec B404
 import sys
 import time
 
-# import warnings
-
-# warnings.filterwarnings(action="always", category=RuntimeWarning)
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
@@ -23,6 +20,8 @@ def ble_reset(delay: float = 20.0, debug: bool = False) -> tuple[str, str]:
     Args:
         delay (float): time [s] to wait between switching off and back on again.
         debug (bool): whether to provide debugging information.
+    Returns:
+        tuple[str, str]: output of the commands to switch off and on the radio.
     """
     if debug:
         LOGGER.addHandler(logging.StreamHandler(sys.stdout))

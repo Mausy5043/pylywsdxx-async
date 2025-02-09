@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pylywsdxx-async"
 description = "A Python3 class to interrogate Xiaomi Mijia LYWSD* sensors asynchronously."
-version = "0.1.4"  # latest/current distribution version
+version = "0.1.6"  # latest/current distribution version
 # version = "0.0.0"  # latest test version
 dependencies = [
     "bleak",

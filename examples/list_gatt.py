@@ -9,7 +9,7 @@ import platform
 
 from bleak import BleakClient
 
-MAC_ADDRESS_OR_UUID = None
+MAC_ADDRESS_OR_UUID = ""
 if platform.system() == "Windows":
     MAC_ADDRESS_OR_UUID = "A4:C1:38:6F:E7:CA"
 if platform.system() == "Darwin":

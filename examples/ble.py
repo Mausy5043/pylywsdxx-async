@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# pylywsdxx-async
+# Copyright (C) 2025  Maurice (mausy5043) Hendrix
+# AGPL-3.0-or-later  - see LICENSE
+
 import asyncio
 
 from bleak import BleakClient, BleakScanner

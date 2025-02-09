@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 
+# pylywsdxx-async
+# Copyright (C) 2025  Maurice (mausy5043) Hendrix
+# AGPL-3.0-or-later  - see LICENSE
+
 import asyncio
+import logging
 import struct
 
 from bleak import BleakClient
 from bleak.backends.characteristic import BleakGATTCharacteristic
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class Lywsd03mmcData:
@@ -79,14 +86,14 @@ class Lywsd03mmcClient:
     BYTES_TO_TEMP_UNIT = {"1": "F", "0": "C"}
 
     COMMON_UUID = "7A0A-4B0C-8A1A-6FF2997DA3A6"
-    GET_TEMP_AND_HUMIDITY_ATTRIBUTE_UUID = f"EBE0CCC1-{COMMON_UUID}"
-    GET_BATTERY_ATTRIBUTE_UUID = f"EBE0CCC4-{COMMON_UUID}"
-    GET_OR_SET_UNITS_ATTRIBUTE_UUID = f"EBE0CCBE-{COMMON_UUID}"
-    GET_OR_SET_TIMESTAMP_ATTRIBUTE_UUID = f"EBE0CCB7-{COMMON_UUID}"
-    GET_OR_SET_FIRST_HISTORY_RECORD_IDX_ATTRIBUTE_UUID = f"EBE0CCBA-{COMMON_UUID}"
-    GET_LAST_CALC_AND_NEXT_IDX_ATTRIBUTE_UUID = f"EBE0CCB9-{COMMON_UUID}"
-    GET_HISTORY_DATA_ATTRIBUTE_UUID = f"EBE0CCBC-{COMMON_UUID}"
-    GET_LAST_CALC_DATA_ATTRIBUTE_UUID = f"EBE0CCBB-{COMMON_UUID}"
+    UUID_TIME = f"EBE0CCB7-{COMMON_UUID}"  # _      5 or 4 bytes          READ WRITE
+    UUID_NUM_RECORDS = f"EBE0CCB9-{COMMON_UUID}"  # 8 bytes               READ
+    UUID_RECORD_IDX = f"EBE0CCBA-{COMMON_UUID}"  # _4 bytes               READ WRITE
+    UUID_RECENT = f"EBE0CCBB-{COMMON_UUID}"
+    UUID_HISTORY = f"EBE0CCBC-{COMMON_UUID}"  # _   Last idx 152          READ NOTIFY
+    UUID_UNITS = f"EBE0CCBE-{COMMON_UUID}"  # _     Celsius(0) or Fahrenheit(1)
+    UUID_DATA = f"EBE0CCC1-{COMMON_UUID}"  # _      3 bytes               READ NOTIFY
+    UUID_BATTERY = f"EBE0CCC4-{COMMON_UUID}"  # _   1 byte                READ
 
     def __init__(self, mac_or_uuid: str, timeout: float):
         self.mac_or_uuid = mac_or_uuid
@@ -98,51 +105,45 @@ class Lywsd03mmcClient:
     async def get_data(self) -> Lywsd03mmcData:
         # returns for example (2216, 23, 3001) -> (temp, humidity, battery_voltage)
         # temp = (22.16) integral and fractional parts
-        res: bytearray = await self.__get_attribute(self.GET_TEMP_AND_HUMIDITY_ATTRIBUTE_UUID)
+        res: bytearray = await self.__get_attribute(self.UUID_DATA)
         (temp, hum, bat_volt) = struct.unpack_from("<hBh", res)
         return Lywsd03mmcData(temperature_raw=temp, humidity=hum, bat_volt=bat_volt)
 
     async def get_battery(self):
-        res: bytearray = await self.__get_attribute(self.GET_BATTERY_ATTRIBUTE_UUID)
+        res: bytearray = await self.__get_attribute(self.UUID_BATTERY)
         return struct.unpack_from("b", res)[0]
 
     async def get_temp_unit(self):
-        res: bytearray = await self.__get_attribute(self.GET_OR_SET_UNITS_ATTRIBUTE_UUID)
+        res: bytearray = await self.__get_attribute(self.UUID_UNITS)
         return self.BYTES_TO_TEMP_UNIT[str(res[0])]
 
     async def set_celsius(self):
-        await self.__write_attribute(self.GET_OR_SET_UNITS_ATTRIBUTE_UUID, b"\x00")
+        await self.__write_attribute(self.UUID_UNITS, b"\x00")
 
     async def set_fahrenheit(self):
-        await self.__write_attribute(self.GET_OR_SET_UNITS_ATTRIBUTE_UUID, b"\x01")
+        await self.__write_attribute(self.UUID_UNITS, b"\x01")
 
     async def get_timestamp(self):
-        res: bytearray = await self.__get_attribute(self.GET_OR_SET_TIMESTAMP_ATTRIBUTE_UUID)
+        res: bytearray = await self.__get_attribute(self.UUID_TIME)
         timestamp = struct.unpack("I", res)[0]
         return timestamp
 
     async def set_timestamp(self, milliseconds: int):
         data: bytes = struct.pack("I", int(milliseconds))
-        await self.__write_attribute(self.GET_OR_SET_TIMESTAMP_ATTRIBUTE_UUID, data)
+        await self.__write_attribute(self.UUID_TIME, data)
 
     async def get_first_history_idx(self):
-        res: bytearray = await self.__get_attribute(
-            self.GET_OR_SET_FIRST_HISTORY_RECORD_IDX_ATTRIBUTE_UUID
-        )
+        res: bytearray = await self.__get_attribute(self.UUID_RECORD_IDX)
         _idx = 0 if len(res) == 0 else struct.unpack_from("I", res)[0]
         return _idx
 
     async def set_first_history_idx(self, idx: int):
         data: bytes = struct.pack("I", int(idx))
-        await self.__write_attribute(
-            self.GET_OR_SET_FIRST_HISTORY_RECORD_IDX_ATTRIBUTE_UUID, data
-        )
+        await self.__write_attribute(self.UUID_RECORD_IDX, data)
 
     async def get_last_calculated_hour_idx_and_next_idx(self) -> tuple:
         # last_calc, last_idx
-        res: bytearray = await self.__get_attribute(
-            self.GET_LAST_CALC_AND_NEXT_IDX_ATTRIBUTE_UUID
-        )
+        res: bytearray = await self.__get_attribute(self.UUID_NUM_RECORDS)
         return struct.unpack_from("II", res)
 
     async def get_history_data(self):
@@ -161,18 +162,18 @@ class Lywsd03mmcClient:
             )
             records.append(data)
 
-        await self.client.start_notify(self.GET_HISTORY_DATA_ATTRIBUTE_UUID, callback)
+        await self.client.start_notify(self.UUID_HISTORY, callback)
 
         await asyncio.sleep(3.0)  # to get first record
         while records[-1].idx_num < last_rec_idx - 1:
             await asyncio.sleep(1.0)
             continue
-        await self.client.stop_notify(self.GET_HISTORY_DATA_ATTRIBUTE_UUID)
+        await self.client.stop_notify(self.UUID_HISTORY)
 
         return records
 
     async def get_last_hour_data(self):
-        res: bytearray = await self.__get_attribute(self.GET_LAST_CALC_DATA_ATTRIBUTE_UUID)
+        res: bytearray = await self.__get_attribute(self.UUID_RECENT)
         data = struct.unpack_from("<IIhBhB", res)
         return Lywsd03mmcOneHourHistoryData(
             idx_num=data[0],

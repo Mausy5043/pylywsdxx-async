@@ -82,7 +82,9 @@ class Lywsd03mmcOneHourHistoryData:
         )
 
 
-class Lywsd03:
+class Lywsd02:
+    """Class to communicate with LYWSD02 devices."""
+
     BYTES_TO_TEMP_UNIT = {"1": "F", "0": "C"}
 
     COMMON_UUID = "7A0A-4B0C-8A1A-6FF2997DA3A6"
@@ -95,9 +97,9 @@ class Lywsd03:
     UUID_DATA = f"EBE0CCC1-{COMMON_UUID}"  # _      3 bytes               READ NOTIFY
     UUID_BATTERY = f"EBE0CCC4-{COMMON_UUID}"  # _   1 byte                READ
 
-    def __init__(self, mac_or_uuid: str, timeout: float):
-        self.mac_or_uuid = mac_or_uuid
-        self.client = BleakClient(address_or_ble_device=self.mac_or_uuid, timeout=timeout)
+    def __init__(self, mac: str, notification_timeout: float, debug: bool = False):
+        self.mac_or_uuid = mac
+        self.client = BleakClient(address_or_ble_device=self.mac_or_uuid, timeout=notification_timeout)
 
     async def connect(self) -> bool:
         return await self.client.connect()
@@ -200,3 +202,12 @@ class Lywsd03:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
+
+
+class Lywsd03(Lywsd02):
+    """Class to communicate with LYWSD03MMC devices."""
+    
+    # Call the parent init with a bigger notification timeout
+    def __init__(self, mac: str, notification_timeout: float = 12.3, debug=False) -> None:
+        super().__init__(mac=mac, notification_timeout=notification_timeout, debug=debug)
+        self._latest_record = None

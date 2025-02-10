@@ -142,13 +142,13 @@ class Lywsd02:
     UUID_DATA = f"EBE0CCC1-{COMMON_UUID}"  # _      3 bytes               READ NOTIFY
     UUID_BATTERY = f"EBE0CCC4-{COMMON_UUID}"  # _   1 byte                READ
 
-    def __init__(self, mac: str, notification_timeout: float, debug: bool = False):
+    def __init__(self, mac: str, timeout: float, debug: bool = False):
         """
         Initialise a LYWSD02 device
 
         Args:
             mac: MAC-adress of the device.
-            notification_timeout: number of seconds to wait for a connection to be made.
+            timeout: number of seconds to wait for a connection to be made.
             debug: whether to provide debugging info output.
         """
         self._mac: str = mac
@@ -157,23 +157,24 @@ class Lywsd02:
             if len(LOGGER.handlers) == 0:
                 LOGGER.addHandler(logging.StreamHandler(sys.stdout))
             LOGGER.level = logging.DEBUG
-        self._notification_timeout: float = notification_timeout
+        self._timeout: float = timeout
         self._tz_offset = None
         self._data = SensorData(None, None, None, None)
         self._history_data = collections.OrderedDict()  # type: ignore
-        self.client = BleakClient(
-            address_or_ble_device=self._mac, timeout=self._notification_timeout
-        )
+        self.client = BleakClient(address_or_ble_device=self._mac, timeout=self._timeout)
 
     async def connect(self) -> bool:
         return await self.client.connect()
 
-    async def get_data(self) -> Lywsd03mmcData:
-        # returns for example (2216, 23, 3001) -> (temp, humidity, battery_voltage)
-        # temp = (22.16) integral and fractional parts
+    async def data(self) -> SensorData:
+        """Get the latest data from the v2 sensor."""
         res: bytearray = await self.__get_attribute(self.UUID_DATA)
-        (temp, hum, bat_volt) = struct.unpack_from("<hBh", res)
-        return Lywsd03mmcData(temperature_raw=temp, humidity=hum, bat_volt=bat_volt)
+        (temperature, humidity) = struct.unpack_from("hB", res)
+        temperature /= 100
+        self._data = SensorData(
+            temperature=temperature, humidity=humidity, battery=None, voltage=None
+        )
+        return self._data
 
     async def get_battery(self):
         res: bytearray = await self.__get_attribute(self.UUID_BATTERY)
@@ -271,7 +272,31 @@ class Lywsd02:
 class Lywsd03(Lywsd02):
     """Class to communicate with LYWSD03MMC devices."""
 
+    # CR2025 / CR2032 maximum theoretical voltage = 3.4 V
+    # ref. Table 1;
+    #  CR2025: https://www.farnell.com/datasheets/1496883.pdf
+    #  CR2032: https://www.farnell.com/datasheets/1496885.pdf
+    # Lowest voltage for these batteries is 2.0 V but the BT radio
+    # on most devices will stop working somewhere below 2.3 V (YMMV).
+    BATTERY_FULL = 3.4
+    BATTERY_LOW = 2.21
+
     # Call the parent init with a bigger notification timeout
-    def __init__(self, mac: str, notification_timeout: float = 12.3, debug=False) -> None:
-        super().__init__(mac=mac, notification_timeout=notification_timeout, debug=debug)
+    def __init__(self, mac: str, timeout: float = 12.3, debug=False) -> None:
+        super().__init__(mac=mac, timeout=timeout, debug=debug)
         self._latest_record = None
+
+    async def data(self) -> SensorData:
+        """Get the latest data from the v3 sensor."""
+        res: bytearray = await self.__get_attribute(self.UUID_DATA)
+        (temperature, humidity, voltage) = struct.unpack_from("<hBh", res)
+        temperature /= 100
+        voltage /= 1000
+        # battery (float): Estimate percentage of the battery charge remaining
+        battery: float = round(
+            ((voltage - self.BATTERY_LOW) / (self.BATTERY_FULL - self.BATTERY_LOW) * 100), 1
+        )
+        self._data = SensorData(
+            temperature=temperature, humidity=humidity, battery=battery, voltage=voltage
+        )
+        return self._data

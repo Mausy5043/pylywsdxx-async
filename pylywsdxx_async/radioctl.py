@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# pylywsdxx
+# pylywsdxx-async
 # Copyright (C) 2024  Maurice (mausy5043) Hendrix
 # AGPL-3.0-or-later  - see LICENSE
 

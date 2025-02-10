@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-# pylywsdxx
+# pylywsdxx-async
 # Copyright (C) 2024  Maurice (mausy5043) Hendrix
 # AGPL-3.0-or-later  - see LICENSE
+
 """
 Structure of the dict kept for each device.
 The dict `state` is returned to the client. The rest is for internal use.
@@ -35,9 +36,9 @@ import time
 from typing import Any, Self
 
 # isort: off
-from .device_sync import Lywsd02
-from .device_sync import Lywsd03
-from .device_sync import PyLyConnectError, PyLyTimeout
+from .device_async import Lywsd02
+from .device_async import Lywsd03
+from .device_async import PyLyConnectError, PyLyTimeout
 
 # isort: on
 from .radioctl import ble_reset, force_disconnect
@@ -70,7 +71,7 @@ class PyLyManager:
             LOGGER.debug("Debugging on.")
         if reset_hardware:
             ble_reset()
-        self.mgr_notification_timeout: float = 11.5
+        self.mgr_timeout: float = 11.5
         self.mgr_reusable: bool = False
         self.median_response_time: float = 11.5
         self.response_list: list[float] = [self.median_response_time]
@@ -104,16 +105,14 @@ class PyLyManager:
         if version == 3:
             _object: Any = Lywsd03(
                 mac=mac,
-                notification_timeout=self.mgr_notification_timeout,
-                reusable=self.mgr_reusable,
+                timeout=self.mgr_timeout,
                 debug=self.mgr_debug,
             )
             LOGGER.info(f"Device ({mac}) is a v3 object")
         else:
             _object = Lywsd02(
                 mac=mac,
-                notification_timeout=self.mgr_notification_timeout,
-                reusable=self.mgr_reusable,
+                timeout=self.mgr_timeout,
                 debug=self.mgr_debug,
             )
             LOGGER.info(f"Device ({mac}) is a v2 object")

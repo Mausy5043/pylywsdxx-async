@@ -16,6 +16,38 @@ from bleak.backends.characteristic import BleakGATTCharacteristic
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
+class PyLyException(Exception):
+    """Base class for all pylywsdxx exceptions."""
+
+    def __init__(self, message: str):
+        self.message: str = message
+
+    def __str__(self) -> str:
+        msg: str = f"(pylywsdxx) {self.message}"
+        return msg
+
+
+class PyLyTimeout(PyLyException):
+    """Class for timeout errors from upstream."""
+
+    def __init__(self, message: str):
+        PyLyException.__init__(self, message)
+
+
+class PyLyConnectError(PyLyException):
+    """Class for connection errors from upstream."""
+
+    def __init__(self, message: str):
+        PyLyException.__init__(self, message)
+
+
+class PyLyValueError(PyLyException):
+    """Class for value errors."""
+
+    def __init__(self, message: str):
+        PyLyException.__init__(self, message)
+
+
 class Lywsd03mmcData:
     def __init__(self, temperature_raw: int, humidity: int, bat_volt: int):
         self._temperature_raw = temperature_raw

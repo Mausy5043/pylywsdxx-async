@@ -163,6 +163,22 @@ class Lywsd02:
         self._history_data = collections.OrderedDict()  # type: ignore
         self.client = BleakClient(address_or_ble_device=self._mac, timeout=self._timeout)
 
+    @property
+    def humidity(self) -> float:
+        return float(self._data.humidity)
+
+    @property
+    def temperature(self) -> float:
+        return float(self._data.temperature)
+
+    @property
+    def voltage(self) -> float:
+        return float(self._data.voltage)
+
+    @property
+    def battery(self) -> float:
+        return float(self._data.battery)
+
     async def connect(self) -> bool:
         return await self.client.connect()
 

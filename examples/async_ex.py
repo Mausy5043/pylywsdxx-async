@@ -28,8 +28,8 @@ if platform.system() == "Linux":
 
 
 async def main(address) -> None:
-    async with Lywsd03(address, notification_timeout=60) as client:
-        lywsd03mmc_data = await client.get_data()
+    async with Lywsd03(address, timeout=60) as client:
+        lywsd03mmc_data = await client.data()
         print(lywsd03mmc_data)
 
 

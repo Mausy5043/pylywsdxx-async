@@ -5,6 +5,7 @@
 # AGPL-3.0-or-later  - see LICENSE
 
 import logging
+import platform
 import re
 import subprocess  # nosec B404
 import sys
@@ -14,6 +15,16 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 # fmt: off
+
+RADIOCTL = False
+if platform.system() == "Windows":
+    RADIOCTL = False
+if platform.system() == "Darwin":
+    RADIOCTL = False
+if platform.system() == "Linux":
+    RADIOCTL = True
+
+
 def ble_reset(delay: float = 20.0, debug: bool = False) -> tuple[str, str]:
     """Reset the bluetooth hardware.
 
@@ -26,7 +37,9 @@ def ble_reset(delay: float = 20.0, debug: bool = False) -> tuple[str, str]:
     if debug:
         LOGGER.addHandler(logging.StreamHandler(sys.stdout))
         LOGGER.level = logging.DEBUG
-
+    if not RADIOCTL:
+        LOGGER.error("This function is not available on this platform.")
+        return ("", "")
     # fetch state of devices from bluetoothctl
     args: list[str] = ["/usr/bin/bluetoothctl", "devices"]
     _devices: str = subprocess.check_output(args, shell=False).decode(encoding="utf-8")  # nosec B603

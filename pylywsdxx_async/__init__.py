@@ -5,12 +5,12 @@ import logging
 import logging.handlers
 
 # isort: off
-from .device_sync import Lywsd02
-from .device_sync import Lywsd03
-from .device_sync import PyLyConnectError
-from .device_sync import PyLyException
-from .device_sync import PyLyTimeout
-from .device_sync import PyLyValueError
+from .device_async import Lywsd02
+from .device_async import Lywsd03
+from .device_async import PyLyConnectError
+from .device_async import PyLyException
+from .device_async import PyLyTimeout
+from .device_async import PyLyValueError
 
 # isort: on
 from .manager import PyLyManager

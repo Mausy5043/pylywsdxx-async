@@ -26,8 +26,8 @@ def main(address) -> None:
     with pyly.PyLyManager(debug=True) as pylyman:
         pylyman.subscribe_to(mac=address, dev_id="test", version=2)
         pylyman.update_all()
-        #dct = pylyman.get_state_of("test")
-        #print(dct)
+        # dct = pylyman.get_state_of("test")
+        # print(dct)
 
 
 if MAC_ADDRESS_OR_UUID:

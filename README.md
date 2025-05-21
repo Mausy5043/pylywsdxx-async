@@ -19,7 +19,6 @@ This is a Python3 library to allow asynchronous interrogation of Xiaomi Mijia LY
 
 Development of this package is done in Python 3.12. The package is considered forwards compatible at least upto Python 3.12 and probably also beyond. Backwards compatibility is not guaranteed; if it works on Python 3.9 or before consider yourself lucky. [Python versions that are end-of-life](https://devguide.python.org/versions/) are not supported.
 
-The package has been extensively tested on a Raspberry Pi 3 Model B+ (aarch64) with Debian GNU Linux 12 /w Python 3.11.*.
 
 
 ## Installation

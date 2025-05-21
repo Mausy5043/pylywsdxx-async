@@ -4,8 +4,10 @@
 [![PyPI version](https://img.shields.io/pypi/v/pylywsdxx-async.svg?logo=pypi&logoColor=FFE873)](https://pypi.org/project/pylywsdxx-async)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/pylywsdxx-async.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/pylywsdxx-async)
 [![PyPI downloads](https://img.shields.io/pypi/dm/pylywsdxx-async.svg)](https://pypistats.org/packages/pylywsdxx-async)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-008800.svg)](https://github.com/astral-sh/ruff)
+[![Linter: ruff](https://img.shields.io/badge/linter-ruff-008800.svg)](https://github.com/astral-sh/ruff)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Mausy5043/pylywsdxx-async/devel.svg)](https://results.pre-commit.ci/latest/github/Mausy5043/pylywsdxx-async/devel)
+[![Dependabot Updates](https://github.com/Mausy5043/pylywsdxx-async/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Mausy5043/pylywsdxx-async/actions/workflows/dependabot/dependabot-updates)
 
 # pylywsdxx-async
 

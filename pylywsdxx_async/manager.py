@@ -40,10 +40,11 @@ from typing import Any, Self
 # isort: off
 from .device_async import Lywsd02
 from .device_async import Lywsd03
-from .device_async import PyLyConnectError, PyLyTimeout
+
+# from .device_async import PyLyConnectError, PyLyTimeout
+from .radioctl import ble_reset  # , force_disconnect
 
 # isort: on
-from .radioctl import ble_reset, force_disconnect
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 

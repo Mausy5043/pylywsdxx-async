@@ -1,3 +1,4 @@
+![StaticBadge](https://img.shields.io/badge/support-ON_HOLD-yellow)
 
 [![License](https://img.shields.io/github/license/mausy5043/pylywsdxx-async)](LICENSE)
 [![PyPI version](https://img.shields.io/pypi/v/pylywsdxx-async.svg?logo=pypi&logoColor=FFE873)](https://pypi.org/project/pylywsdxx-async)

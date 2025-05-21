@@ -316,3 +316,10 @@ class Lywsd03(Lywsd02):
             temperature=temperature, humidity=humidity, battery=battery, voltage=voltage
         )
         return self._data
+
+    async def __aenter__(self):
+        await self.connect()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()

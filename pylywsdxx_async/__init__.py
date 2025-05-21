@@ -22,7 +22,9 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
         logging.handlers.SysLogHandler(
-            address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_DAEMON
+            # address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_DAEMON
+            address="/var/run/syslog",
+            facility=logging.handlers.SysLogHandler.LOG_DAEMON,
         )
     ],
 )

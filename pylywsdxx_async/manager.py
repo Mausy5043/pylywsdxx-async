@@ -26,6 +26,7 @@ The dict `state` is returned to the client. The rest is for internal use.
 }
 """
 
+import asyncio
 import datetime as dt
 import logging
 import statistics as stat
@@ -33,6 +34,7 @@ import sys
 import time
 
 # from threading import Timer
+import traceback
 from typing import Any, Self
 
 # isort: off
@@ -143,7 +145,7 @@ class PyLyManager:
         LOGGER.debug(f"{dev_id} : {self.device_db[dev_id]['state']}")
         return self.device_db[dev_id]["state"]  # type: ignore[no-any-return]
 
-    def update(self, dev_id: str) -> None:
+    async def update(self, dev_id: str) -> None:
         """Update the device's state information.
 
         Args:
@@ -159,24 +161,25 @@ class PyLyManager:
         _device = self.device_db[dev_id]["object"]
         # fmt: off
         try:
-            device_data: Any = _device.data
+            device_data: Any = await _device.data()
             self.device_db[dev_id]["state"]["temperature"] = device_data.temperature
             self.device_db[dev_id]["state"]["humidity"] = device_data.humidity
             self.device_db[dev_id]["state"]["voltage"] = device_data.voltage
             self.device_db[dev_id]["state"]["battery"] = device_data.battery
-        except PyLyTimeout:  # pylint: disable=W0703
-            excepted = True
-            LOGGER.warning(f"*{dev_id}* While talking to room, device {self.device_db[dev_id]['state']['mac']} timed out.")   # noqa: E501  # pylint: disable=C0301
-            # Device did not disconnect properly
-            force_disconnect(self.device_db[dev_id]['state']['mac'])
-        except PyLyConnectError:  # pylint: disable=W0703
-            excepted = True
-            LOGGER.error(f"*{dev_id}*  While connecting to room, could not connect to device {self.device_db[dev_id]['state']['mac']}.")   # noqa: E501  # pylint: disable=C0301
-            # Device did not disconnect properly
-            force_disconnect(self.device_db[dev_id]['state']['mac'])
+        # except PyLyTimeout:  # pylint: disable=W0703
+        #     excepted = True
+        #     LOGGER.warning(f"*{dev_id}* While talking to room, device {self.device_db[dev_id]['state']['mac']} timed out.")   # noqa: E501  # pylint: disable=C0301
+        #     # Device did not disconnect properly
+        #     force_disconnect(self.device_db[dev_id]['state']['mac'])
+        # except PyLyConnectError:  # pylint: disable=W0703
+        #     excepted = True
+        #     LOGGER.error(f"*{dev_id}*  While connecting to room, could not connect to device {self.device_db[dev_id]['state']['mac']}.")   # noqa: E501  # pylint: disable=C0301
+        #     # Device did not disconnect properly
+        #     force_disconnect(self.device_db[dev_id]['state']['mac'])
         except Exception as her:  # pylint: disable=W0703
             excepted = True
             LOGGER.error(f"*{dev_id}*  While talking to room, device {self.device_db[dev_id]['state']['mac']} caused {type(her).__name__} {her} ")   # noqa: E501  # pylint: disable=C0301
+            LOGGER.error(traceback.format_exc())
 
         # record the time
         self.device_db[dev_id]["state"]["datetime"] = dt.datetime.now()
@@ -220,7 +223,7 @@ class PyLyManager:
             # don't bother to update devices that are on hold
             t_next: float = time.time() - dev_state["control"]["next"]
             if t_next > 0:
-                self.update(dev_id=dev)
+                asyncio.run(self.update(dev_id=dev))
                 dev_state["control"]["next"] = time.time()
         # check radio
         self.handle_fails()
